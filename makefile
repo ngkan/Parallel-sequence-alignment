@@ -2,7 +2,7 @@ CXX = g++
 CFLAGS = -pthread -std=c++17 -Wall -Wextra -Weffc++
 
 SOURCES = \
-	algorithms/naive.cpp \
+	algorithms/needleman-wunsh.cpp \
 	algorithms/rajko-aluru.cpp \
 	algorithms.cpp\
 	utils.cpp \
@@ -12,7 +12,7 @@ OBJECTS = \
 	utils.o \
 	main.o 
 
-exec: main.cpp utils.cpp algorithms.cpp algorithms/rajko-aluru.cpp algorithms/naive.cpp
+exec: main.cpp utils.cpp algorithms.cpp algorithms/rajko-aluru.cpp algorithms/needleman-wunsh.cpp
 	$(CXX) main.cpp  $(CFLAGS) -o exec 
 
 # exec: $(OBJECTS)
