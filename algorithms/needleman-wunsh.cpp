@@ -26,8 +26,17 @@ int RecurrenceRelation(std::vector<std::vector<int>>& T,std::vector<std::vector<
     }
     // score computation
     int no_gap_sc = H[i-1][j-1] + p_ij;
-    int gap_1_sc = H[i][j-1] - 2;
-    int gap_2_sc = H[i-1][j] - 2;
+    int gap_1_sc = H[i][j-1] + g;
+    int gap_2_sc = H[i-1][j] + g;
+
+
+    if ((i==1)&&(j==1)){
+        std::cout << "a_i" << a_i << std::endl;
+        std::cout << "b_j" << b_j << std::endl;
+        std::cout << "no gap " << no_gap_sc << std::endl;
+        std::cout << "gap 1 " << gap_1_sc << std::endl;
+        std::cout << "gap 2 " << gap_2_sc << std::endl;
+    }
 
     // score comparison and cell indication
     if (no_gap_sc > gap_1_sc){
@@ -41,7 +50,7 @@ int RecurrenceRelation(std::vector<std::vector<int>>& T,std::vector<std::vector<
         }
     }
     else{
-        if (gap_1_sc>gap_2_sc){
+        if (gap_1_sc > gap_2_sc){
             T[i][j] = gap_1;
             score = gap_1_sc;
         }
@@ -90,7 +99,7 @@ std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b,
 
     for (int i = 1; i<n; i++){
         for (int j = 1; j<m; j++){
-            H[i][j] = RecurrenceRelation(T,H,i,j,a[i],b[j]);
+            H[i][j] = RecurrenceRelation(T,H,i,j,a[i-1],b[j-1]);
         }
     }
 
@@ -107,7 +116,7 @@ std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b,
 
     for (int i = 0; i < n; ++i){
         for (int j = 0; j < m; ++j){
-            std::cout << H[i][j] << ' ';
+            std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
         }
         std::cout << std::endl;
     }          
