@@ -145,7 +145,7 @@ std::vector<std::pair<int, int>> NW(std::string a, std::string b, std::function<
     return res;
 }
 
-// ----------------------------------------------------------------------------
+// --------------------- SafeUnboundedQueue for Diagonal Wavefront --------------------------------
 
 template <class E> 
 class SafeUnboundedQueue {
@@ -187,48 +187,50 @@ E SafeUnboundedQueue<E>::pop() {
     return last;
 }
 
-//-----------------------------------------------------------------------------
+//---------------------- Thread pool for Diagonal Wavefront --------------------------------
 
 class SimplePool {
         unsigned int num_workers;
         std::vector<std::thread> workers;
-        SafeUnboundedQueue<std::function<bool()> > tasks;
-        // the suggestion is to use the returned bool value to distinguish
-        // between usuall tasks and stopper tasks
-        //
-        // std::optional<std::function<void()> >
-        // struct task {std::function<void()>, bool}
-        // ...
-        // stopper
-        // push([]() -> bool {return false;})
-        // usual task
-        // push([]() -> bool {do some work with f and args; return true;})
-
-
+        SafeUnboundedQueue< std::pair<int,int> > tasks;
         void do_work();
-        // create workers: workers[i] = std::thread(&do_work)
 
     public:
-        SimplePool(unsigned int num_workers = 0);
+        SimplePool(unsigned int num_workers, int n, int m );
         ~SimplePool();
-        template <class F, class... Args>
-        void push(F f, Args ... args);
+        std::vector<std::vector<int>> H,T;
+        void push(std::pair<int, int> cell);
         void stop();
+        std::string a, b;
+        std::function<int(char, char)> scoring_function;
+        int gap_penalty;
 };
 
 void SimplePool::do_work() {
 
     while(true){
-        std::function<bool()> t = tasks.pop();
-        bool  res = t(); // execute task and retrieve bool flag
-        if (res==false){ // stopper task
-            return; // stop taking new tasks
+        std::pair<int, int> cell = tasks.pop();
+        int i = cell.first;
+        int j = cell.second;
+
+        if (i==-1){ // stopper task
+            break; // stop taking new tasks
         }
+
+        H[i][j] = RecurrenceRelation(T,H, i,j,a[i], b[j], scoring_function, gap_penalty);
+
     }
 
 }
 
-SimplePool::SimplePool(unsigned int num_workers) {
+SimplePool::SimplePool(unsigned int num_workers, int n, int m) {
+
+    std::vector<std::vector<int>> h(n, std::vector<int> (m));
+    std::vector<std::vector<int>> t(n, std::vector<int> (m,0));
+    
+    this->H = h;
+    this->T = t;
+
     this->num_workers = num_workers;
 
     for (int i = 0; i<num_workers; i++){
@@ -247,10 +249,9 @@ SimplePool::~SimplePool() {
 
 }
 
-template <class F, class... Args>
-void SimplePool::push(F f, Args ... args) {
+void SimplePool::push(std::pair<int, int> cell) {
 
-    tasks.push([args..., f]() -> bool {f(args...); return true;});
+    tasks.push(cell);
 
 }
 
@@ -258,7 +259,7 @@ void SimplePool::stop() {
 
     // push n stopper tasks
     for (int i = 0; i<num_workers; i++){
-        tasks.push([]() -> bool {return false;}); 
+        tasks.push(std::pair(-1,-1)); 
     }
 
     // join all threads
@@ -267,46 +268,75 @@ void SimplePool::stop() {
     }
 }
 
-//-----------------------------------------------------------------------------
+//----------------------Diagonal Wavefront applied to Needleman-Wunsh ------------------------------
 
 std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::function<int(char, char)> scoring_function, int gap_penalty) {
     
     int n = a.length()+1; // row number
     int m = b.length()+1; // col number
 
-    std::vector<std::vector<int>> H(n, std::vector<int> (m)), T(n, std::vector<int> (m,0));
-
-    // H DP matrix of score
-    // T traceback matrix
-
     int max = std::max(n,m);
     int min = std::min(n,m);
 
     // ---------------- Initialization --------------
 
+    unsigned int num_workers = min-1;
+    SimplePool worker_pool= SimplePool(num_workers, n , m);
+
+    worker_pool.scoring_function = scoring_function;
+    worker_pool.a = a;
+    worker_pool.b = b;
+    worker_pool.gap_penalty = gap_penalty;
+
     for (int i = 0; i<min; i++){
-        H[i][0] = i*gap_penalty;
-        H[0][i] = i*gap_penalty;
+        worker_pool.H[i][0] = i*gap_penalty;
+        worker_pool.H[0][i] = i*gap_penalty;
     }
 
     if (max==n){  // extend row axis
         for (int i = min; i<max; i++ ){
-            H[i][0] = i*gap_penalty;
+            worker_pool.H[i][0] = i*gap_penalty;
         }
     }
     else{ // extend column axis
         for (int i = min; i<max; i++ ){
-            H[0][i] = i*gap_penalty;
+            worker_pool.H[0][i] = i*gap_penalty;
         }
     }
 
     // ------------------ Algorithm  ------------------
 
+    int r, c;
+    // iterate over rows
     for (int i = 1; i<n; i++){
-        for (int j = 1; j<m; j++){
-            H[i][j] = RecurrenceRelation(T,H,i,j,a[i-1],b[j-1],scoring_function, gap_penalty);
+        // construct anti-diagonal and push tasks
+        r = i;
+        c = 1;
+        while ((1<r)&&(c<m)){
+            worker_pool.push(std::pair(r,c));
+            r -= 1;
+            c += 1;
         }
     }
+    // then over columns
+    for (int j = 2; j<m; j++){
+        // construct anto-diagonal and push tasks
+        r = n-1;
+        c = j;
+        while ((1<r)&&(c<m)){
+            worker_pool.push(std::pair(r,c));
+            r -= 1;
+            c += 1;
+        }
+    }
+
+    worker_pool.stop();
+
+    std::vector<std::vector<int>> H,T;
+    H = worker_pool.H;
+    T = worker_pool.T;
+
+    std::cout<< "finished work" << std::endl;
 
     // ----------------- print T ---------------------
 
@@ -317,7 +347,7 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::functi
         std::cout << std::endl;
     }
 
-    // ---------------- print H --------------------
+    // // ---------------- print H --------------------
 
     for (int i = 0; i < n; ++i){
         for (int j = 0; j < m; ++j){

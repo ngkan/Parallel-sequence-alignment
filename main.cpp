@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-
 #include "algorithms.cpp"
 #include "utils.cpp"
 
@@ -8,9 +7,16 @@ void test_nw() {
     std::string a = "ATC";
     std::string b = "ATCG";
 
-    //auto func = [](char a,char b) { if(a==b) return 1; else return -1; };
-
     auto res = NW(a, b, [](char a,char b) { if(a==b) return 1; else return -1; }, -2);
+    for (auto c : res)
+        std::cout << c.first << ' ' << c.second << std::endl;
+}
+
+void test_nw_dw() {
+    std::string a = "ATCG";
+    std::string b = "ATCG";
+
+    auto res = DW_NW(a, b, [](char a,char b) { if(a==b) return 1; else return -1; }, -2);
     for (auto c : res)
         std::cout << c.first << ' ' << c.second << std::endl;
 }
@@ -26,6 +32,6 @@ void test_gotoh() {
 
 }
 int main() {
-    test_nw();
+    test_nw_dw();
     //test_gotoh(); 
 }
