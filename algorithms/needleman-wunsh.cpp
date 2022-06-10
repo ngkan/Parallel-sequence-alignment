@@ -12,31 +12,13 @@
 #define g -2
 
 
-namespace Naive {
+int RecurrenceRelation(std::vector<std::vector<int>>& T,std::vector<std::vector<int>>& H, int i,int j,char a_i, char b_j, std::function<int(char, char)> scoring_function, int gap_penalty){
 
-int RecurrenceRelation(std::vector<std::vector<int>>& T,std::vector<std::vector<int>>& H, int i,int j,char a_i, char b_j){
+    int score; 
 
-    int p_ij, score; 
-    // match check
-    if (a_i==b_j){
-        p_ij = 1;
-    }
-    else{
-        p_ij = -1;
-    }
-    // score computation
-    int no_gap_sc = H[i-1][j-1] + p_ij;
-    int gap_1_sc = H[i][j-1] + g;
-    int gap_2_sc = H[i-1][j] + g;
-
-
-    if ((i==1)&&(j==1)){
-        std::cout << "a_i" << a_i << std::endl;
-        std::cout << "b_j" << b_j << std::endl;
-        std::cout << "no gap " << no_gap_sc << std::endl;
-        std::cout << "gap 1 " << gap_1_sc << std::endl;
-        std::cout << "gap 2 " << gap_2_sc << std::endl;
-    }
+    int no_gap_sc = H[i-1][j-1] + scoring_function(a_i,b_j);
+    int gap_1_sc = H[i][j-1] + gap_penalty;
+    int gap_2_sc = H[i-1][j] + gap_penalty;
 
     // score comparison and cell indication
     if (no_gap_sc > gap_1_sc){
@@ -64,7 +46,7 @@ int RecurrenceRelation(std::vector<std::vector<int>>& T,std::vector<std::vector<
 }
 
 
-std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b, std::function<int()> scoring_function, int gap_penalty) {
+std::vector<std::pair<int, int>> NW(std::string a, std::string b, std::function<int(char, char)> scoring_function, int gap_penalty) {
     
     int n = a.length()+1; // row number
     int m = b.length()+1; // col number
@@ -80,18 +62,18 @@ std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b,
     // ---------------- Initialization --------------
 
     for (int i = 0; i<min; i++){
-        H[i][0] = i*g;
-        H[0][i] = i*g;
+        H[i][0] = i*gap_penalty;
+        H[0][i] = i*gap_penalty;
     }
 
     if (max==n){  // extend row axis
         for (int i = min; i<max; i++ ){
-            H[i][0] = i*g;
+            H[i][0] = i*gap_penalty;
         }
     }
     else{ // extend column axis
         for (int i = min; i<max; i++ ){
-            H[0][i] = i*g;
+            H[0][i] = i*gap_penalty;
         }
     }
 
@@ -99,7 +81,7 @@ std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b,
 
     for (int i = 1; i<n; i++){
         for (int j = 1; j<m; j++){
-            H[i][j] = RecurrenceRelation(T,H,i,j,a[i-1],b[j-1]);
+            H[i][j] = RecurrenceRelation(T,H,i,j,a[i-1],b[j-1],scoring_function, gap_penalty);
         }
     }
 
@@ -153,11 +135,5 @@ std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b,
 
     return res;
 }
-
-std::vector<std::pair<int, int>> AffineGapSolver(std::string a, std::string b, std::function<int()> scoring_function, int constant_penalty, int gap_penalty) {
-    return {};
-}
-};  
-// namespace Naive
 
 #endif

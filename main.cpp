@@ -8,7 +8,9 @@ void test_nw() {
     std::string a = "ATC";
     std::string b = "ATCG";
 
-    auto res = Naive::ConstantGapSolver(a, b, []() { return 0; }, 1);
+    //auto func = [](char a,char b) { if(a==b) return 1; else return -1; };
+
+    auto res = NW(a, b, [](char a,char b) { if(a==b) return 1; else return -1; }, -2);
     for (auto c : res)
         std::cout << c.first << ' ' << c.second << std::endl;
 }
@@ -23,6 +25,6 @@ void test_gotoh() {
 
 }
 int main() {
-    // test_nw();
-    test_gotoh(); 
+    test_nw();
+    //test_gotoh(); 
 }
