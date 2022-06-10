@@ -6,8 +6,8 @@
 #include <utility>
 #include <vector>
 
-#define gap_1 1
-#define gap_2 2
+#define gap_1 1 // (i,j-1)
+#define gap_2 2 // (i-1,j)
 #define no_gap 3
 #define g -2
 
@@ -57,8 +57,8 @@ int RecurrenceRelation(std::vector<std::vector<int>>& T,std::vector<std::vector<
 
 std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b, std::function<int()> scoring_function, int gap_penalty) {
     
-    int n = a.length(); // row number
-    int m = b.length(); // col number
+    int n = a.length()+1; // row number
+    int m = b.length()+1; // col number
 
     std::vector<std::vector<int>> H(n, std::vector<int> (m)), T(n, std::vector<int> (m));
 
@@ -95,13 +95,36 @@ std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b,
     }
 
     // ----------------- Traceback --------------------
-
     
+    std::vector<std::pair<int, int>> res;
 
+    int row = n-1;
+    int col = m-1;
 
-    return {};
+    while (true){ // follow indication matrix for traceback
+        int gap_type = T[row][col];
 
+        if (gap_type==gap_2){
+            res.push_back(std::pair(row,0));
+            row -= 1;
+        }
+        else if (gap_type==gap_1){
+            res.push_back(std::pair(0,col));
+            col -= 1;
+        }
+        else if (gap_type==no_gap){
+            res.push_back(std::pair(row,col));
+            row-=1;
+            col-=1;
+        }
+        if ((row==0)&&(col==0)){
+            break;
+        }
+    }
 
+    std::reverse(res.begin(),res.end());
+
+    return res;
 }
 
 std::vector<std::pair<int, int>> AffineGapSolver(std::string a, std::string b, std::function<int()> scoring_function, int constant_penalty, int gap_penalty) {
