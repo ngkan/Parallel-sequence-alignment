@@ -192,10 +192,10 @@ E SafeUnboundedQueue<E>::pop() {
 class SimplePool {
         unsigned int num_workers;
         std::vector<std::thread> workers;
-        SafeUnboundedQueue< std::pair<int,int> > tasks;
         void do_work();
 
     public:
+        SafeUnboundedQueue< std::pair<int,int> > tasks;
         SimplePool(unsigned int num_workers, int n, int m );
         ~SimplePool();
         std::vector<std::vector<int>> H,T;
@@ -217,7 +217,7 @@ void SimplePool::do_work() {
             break; // stop taking new tasks
         }
 
-        H[i][j] = RecurrenceRelation(T,H, i,j,a[i], b[j], scoring_function, gap_penalty);
+        H[i][j] = RecurrenceRelation(T,H, i,j,a[i-1], b[j-1], scoring_function, gap_penalty);
 
     }
 
@@ -226,7 +226,7 @@ void SimplePool::do_work() {
 SimplePool::SimplePool(unsigned int num_workers, int n, int m) {
 
     std::vector<std::vector<int>> h(n, std::vector<int> (m));
-    std::vector<std::vector<int>> t(n, std::vector<int> (m,0));
+    std::vector<std::vector<int>> t(n, std::vector<int> (m));
     
     this->H = h;
     this->T = t;
@@ -291,16 +291,20 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::functi
     for (int i = 0; i<min; i++){
         worker_pool.H[i][0] = i*gap_penalty;
         worker_pool.H[0][i] = i*gap_penalty;
+        worker_pool.T[i][0] = 0;
+        worker_pool.T[0][i] = 0;
     }
 
     if (max==n){  // extend row axis
         for (int i = min; i<max; i++ ){
             worker_pool.H[i][0] = i*gap_penalty;
+            worker_pool.T[i][0] = 0;
         }
     }
     else{ // extend column axis
         for (int i = min; i<max; i++ ){
             worker_pool.H[0][i] = i*gap_penalty;
+            worker_pool.T[0][i] = 0;
         }
     }
 
@@ -312,21 +316,31 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::functi
         // construct anti-diagonal and push tasks
         r = i;
         c = 1;
-        while ((1<r)&&(c<m)){
+        std::cout << "diag " << i << std::endl;
+        while ((1<=r)&&(c<m)){
+            std::cout << "(" << r << ' ' << c << ")" << ' ';
             worker_pool.push(std::pair(r,c));
             r -= 1;
             c += 1;
         }
+
+        while(!worker_pool.tasks.is_empty()){
+            ;
+        }
     }
     // then over columns
     for (int j = 2; j<m; j++){
-        // construct anto-diagonal and push tasks
+        // construct anti-diagonal and push tasks
         r = n-1;
         c = j;
-        while ((1<r)&&(c<m)){
+        while ((1<=r)&&(c<m)){
             worker_pool.push(std::pair(r,c));
             r -= 1;
             c += 1;
+        }
+
+        while(!worker_pool.tasks.is_empty()){
+            ;
         }
     }
 
@@ -337,6 +351,11 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::functi
     T = worker_pool.T;
 
     std::cout<< "finished work" << std::endl;
+
+    std::cout << "T row " << worker_pool.T.size() << " col" << worker_pool.T[0].size() << std::endl;
+    // --------------- print H size -----------
+    std::cout << "H row " << worker_pool.H.size() << " col" << worker_pool.H[0].size() << std::endl;
+
 
     // ----------------- print T ---------------------
 

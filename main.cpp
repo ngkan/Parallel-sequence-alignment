@@ -13,8 +13,8 @@ void test_nw() {
 }
 
 void test_nw_dw() {
-    std::string a = "ATCG";
-    std::string b = "ATCG";
+    std::string a = "TAGAAATTT";
+    std::string b = "TAGTTT";
 
     auto res = DW_NW(a, b, [](char a,char b) { if(a==b) return 1; else return -1; }, -2);
     for (auto c : res)
