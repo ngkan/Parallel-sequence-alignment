@@ -30,8 +30,8 @@ int RecurrenceRelation(std::vector<std::vector<int>>& T,std::vector<std::vector<
     int gap_2_sc = H[i-1][j] - 2;
 
     // score comparison and cell indication
-    if (no_gap_sc>gap_1_sc){
-        if (no_gap_sc>gap_2_sc){
+    if (no_gap_sc > gap_1_sc){
+        if (no_gap_sc > gap_2_sc){
             T[i][j] = no_gap;
             score = no_gap_sc;
         }
@@ -60,7 +60,7 @@ std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b,
     int n = a.length()+1; // row number
     int m = b.length()+1; // col number
 
-    std::vector<std::vector<int>> H(n, std::vector<int> (m)), T(n, std::vector<int> (m));
+    std::vector<std::vector<int>> H(n, std::vector<int> (m)), T(n, std::vector<int> (m,0));
 
     // H DP matrix of score
     // T traceback matrix
@@ -94,6 +94,24 @@ std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b,
         }
     }
 
+    // ----------------- print T ---------------------
+
+    for (int i = 0; i < n; ++i){
+        for (int j = 0; j < m; ++j){
+            std::cout << T[i][j] << ' ';
+        }
+        std::cout << std::endl;
+    }
+
+    // ---------------- print H --------------------
+
+    for (int i = 0; i < n; ++i){
+        for (int j = 0; j < m; ++j){
+            std::cout << H[i][j] << ' ';
+        }
+        std::cout << std::endl;
+    }          
+
     // ----------------- Traceback --------------------
     
     std::vector<std::pair<int, int>> res;
@@ -114,8 +132,8 @@ std::vector<std::pair<int, int>> ConstantGapSolver(std::string a, std::string b,
         }
         else if (gap_type==no_gap){
             res.push_back(std::pair(row,col));
-            row-=1;
-            col-=1;
+            row -= 1;
+            col -= 1;
         }
         if ((row==0)&&(col==0)){
             break;
