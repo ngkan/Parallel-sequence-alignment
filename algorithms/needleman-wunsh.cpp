@@ -254,6 +254,39 @@ void SimplePool::stop() {
     }
 }
 
+
+int RecurrenceRelation_pointers(std::vector<int>** T, std::vector<int>** H, int i,int j,char a_i, char b_j, std::function<int(char, char)> scoring_function, int gap_penalty){
+
+    int score; 
+
+    int no_gap_sc = (*H[i-1])[j-1] + scoring_function(a_i,b_j);
+    int gap_1_sc = (*H[i])[j-1] + gap_penalty;
+    int gap_2_sc = (*H[i-1])[j] + gap_penalty;
+
+    // score comparison and cell indication
+    if (no_gap_sc > gap_1_sc){
+        if (no_gap_sc > gap_2_sc){
+            (*T[i])[j] = no_gap;
+            score = no_gap_sc;
+        }
+        else{
+            (*T[i])[j] = gap_2;
+            score = gap_2_sc;
+        }
+    }
+    else{
+        if (gap_1_sc > gap_2_sc){
+            (*T[i])[j] = gap_1;
+            score = gap_1_sc;
+        }
+        else{
+            (*T[i])[j] = gap_2;
+            score = gap_2_sc;
+        }
+    }
+
+    return score;
+}
 //---------------------- Diagonal Wavefront (DW) applied to Needleman-Wunsh ------------------------------
 
 std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::function<int(char, char)> scoring_function, int gap_penalty) {
@@ -362,17 +395,18 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::functi
 
 class Block{
     public:
-        std::vector<std::vector<int>> H,T;
+        std::vector<int>** H, **T;
         int start, end;
-        std::vector<bool> flag_col, border_col;
+        std::vector<bool>* flag_col, *border_col;
         std::string a,b;
         std::function<int(char,char)> scoring_function;
-        int gap_penalty;
+        int gap_penalty,id;
 
         Block(){};
-        Block(std::vector<std::vector<int>>& H,std::vector<std::vector<int>>& T, int start, int end, std::vector<bool>& start_col, std::function<int(char,char)> f, int p, std::string a, std::string b){
+        Block(int block_id, std::vector<int>** H,std::vector<int>** T, int start, int end, std::vector<bool>* start_col, std::function<int(char,char)> f, int p, std::string a, std::string b){
         this->H = H;
         this->T = T;
+        this-> id = block_id;
 
         this->start = start;
         this-> end = end;
@@ -381,33 +415,37 @@ class Block{
         this->gap_penalty = p;
 
         this->flag_col = start_col;
-        int n = H.size();
-        std::vector<bool> init(n-1,false);
+        int n = (**H).size();
+        std::vector<bool>* init = new std::vector<bool>(n-1,false);
         this->border_col = init;
     }
 
      /* executes algorithm for block */
-        void do_work(){
+    void do_work(){
+        std::cout << "id " << id << std::endl;
+        int n = (*flag_col).size();
 
-        int i = 0;
-        int n = flag_col.size();
+        for (int j = 0; j < n; ++j){
+            std::cout << (*flag_col)[j] << ' ';
+        }
+        std::cout << std::endl;
 
         for (int i = 0; i<n; i++){
             // waiting until border element has been computed
-            while(!flag_col[i]){ 
+            while(!(*flag_col)[i]){ 
                 ;
             }
-            compute_line(i);
+            compute_line(i+1);
             // mark the border element of the line as true
-            border_col[i]  = true;
+            (*border_col)[i]  = true;
         }
 
     }
 
         /* computes and records all cells of line i from (i,start) to (i,end) for H and T */
-        void compute_line(int i ){
+    void compute_line(int i ){
         for (int k = start; k < end; k++){
-            H[i][start] = RecurrenceRelation(T,H,i,k,a[i-1], b[k-1], scoring_function, gap_penalty);
+            (*H[i])[start] = RecurrenceRelation_pointers(T,H,i,k,a[i-1], b[k-1], scoring_function, gap_penalty);
         }
 
     }
@@ -421,7 +459,13 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
     int n = a.length()+1; // row number
     int m = b.length()+1; // col number
 
-    std::vector<std::vector<int>> H,T;
+    std::vector<int>** H = new std::vector<int>* [n];
+    std::vector<int>** T = new std::vector<int>* [n];
+
+    for (int i=0; i < n; i++){
+        H[i] = new std::vector<int>(m);
+        T[i] = new std::vector<int>(m,0);
+    }
 
     // ---------------- Initialization --------------
     // assume block_size < m and block_size > 1
@@ -429,7 +473,10 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
     int block_size = (int) (m-1)/num_blocks;
     int last_size = block_size + ((m-1) % num_blocks);
 
-    std::vector<bool> flag(block_size, true);
+    std::cout << "block_size " << block_size << ' ';
+    std::cout << "last_size" << last_size << std::endl;
+
+    std::vector<bool>* flag = new std::vector<bool>(n-1, true);
     std::vector<Block> blocks(num_blocks);
     
     int start, end;
@@ -437,20 +484,22 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
     start = 1;
     end = start+block_size;
 
-    blocks[0] = Block(H,T,start,end, flag, scoring_function, gap_penalty,a,b);
+    blocks[0] = Block(0,H,T,start,end, flag, scoring_function, gap_penalty,a,b);
 
 
     for (int i = 1; i<(num_blocks-1); i++){
         start += block_size;
         end += block_size;
-        blocks[i] = Block(H,T,start,end, blocks[i-1].border_col, scoring_function, gap_penalty, a, b);
+        std::cout << "( " << start << ' '<< end << " )" << std::endl;
+        blocks[i] = Block(i,H,T,start,end, blocks[i-1].border_col, scoring_function, gap_penalty, a, b);
     }
     
     int l = num_blocks-1;
     start += last_size;
     end += last_size;
-    blocks[l] = Block(H,T,start,end, blocks[l-1].border_col, scoring_function, gap_penalty, a, b);
-
+    blocks[l] = Block(l,H,T,start,end, blocks[l-1].border_col, scoring_function, gap_penalty, a, b);
+    
+    std::cout << "finish block construction" << std::endl;
     
     // --------------------- Threading (algorithm execution)  -----------------------
 
@@ -470,7 +519,7 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
 
     for (int i = 0; i < n; ++i){
         for (int j = 0; j < m; ++j){
-            std::cout << T[i][j] << ' ';
+            std::cout << (*(T[i]))[j] << ' ';
         }
         std::cout << std::endl;
     }
@@ -479,7 +528,7 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
 
     for (int i = 0; i < n; ++i){
         for (int j = 0; j < m; ++j){
-            std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
+            std::cout << ' ' << ' ' << (*(H[i]))[j] << ' ' << ' ';
         }
         std::cout << std::endl;
     }          
@@ -492,7 +541,7 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
     int col = m-1;
 
     while (true){ // follow indication matrix for traceback
-        int gap_type = T[row][col];
+        int gap_type = (*T[row])[col];
 
         if (gap_type==gap_2){
             res.push_back(std::pair(row,0));
