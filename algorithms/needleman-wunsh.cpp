@@ -364,29 +364,57 @@ class Block{
     public:
         std::vector<std::vector<int>> H,T;
         int start, end;
-        std::vector<bool> start_col, border_col;
-    
-    Block(std::vector<std::vector<int>>& H,std::vector<std::vector<int>>& T, int start, int end, std::vector<bool>& start_col){
+        std::vector<bool> flag_col, border_col;
+        std::string a,b;
+        std::function<int(char,char)> scoring_function;
+        int gap_penalty;
+
+        Block(){};
+        Block(std::vector<std::vector<int>>& H,std::vector<std::vector<int>>& T, int start, int end, std::vector<bool>& start_col, std::function<int(char,char)> f, int p, std::string a, std::string b){
         this->H = H;
         this->T = T;
+
         this->start = start;
         this-> end = end;
-        this->start_col = start_col;
+
+        this->scoring_function = f;
+        this->gap_penalty = p;
+
+        this->flag_col = start_col;
         int n = H.size();
         std::vector<bool> init(n-1,false);
         this->border_col = init;
     }
 
-    void do_work(){
+     /* executes algorithm for block */
+        void do_work(){
 
         int i = 0;
-        int n = H.size();
+        int n = flag_col.size();
+
+        for (int i = 0; i<n; i++){
+            // waiting until border element has been computed
+            while(!flag_col[i]){ 
+                ;
+            }
+            compute_line(i);
+            // mark the border element of the line as true
+            border_col[i]  = true;
+        }
+
+    }
+
+        /* computes and records all cells of line i from (i,start) to (i,end) for H and T */
+        void compute_line(int i ){
+        for (int k = start; k < end; k++){
+            H[i][start] = RecurrenceRelation(T,H,i,k,a[i-1], b[k-1], scoring_function, gap_penalty);
+        }
 
     }
 
 };
 
-//---------------------- BLock-Based Wavefront (BW) applied to Needleman-Wunsh ------------------------------
+//---------------------- Block-Based Wavefront (BW) applied to Needleman-Wunsh ------------------------------
 
 std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::function<int(char, char)> scoring_function, int gap_penalty, int num_blocks) {
     
@@ -396,35 +424,65 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
     std::vector<std::vector<int>> H,T;
 
     // ---------------- Initialization --------------
+    // assume block_size < m and block_size > 1
 
-    int block_size = (int) (m-1)/n;
-    int last_size = (m-1) % n;
+    int block_size = (int) (m-1)/num_blocks;
+    int last_size = block_size + ((m-1) % num_blocks);
 
-    // ------------------ Algorithm  ------------------
+    std::vector<bool> flag(block_size, true);
+    std::vector<Block> blocks(num_blocks);
+    
+    int start, end;
 
-    int r, c;
+    start = 1;
+    end = start+block_size;
 
-    // iterate over antidiagonals on the row axis
+    blocks[0] = Block(H,T,start,end, flag, scoring_function, gap_penalty,a,b);
 
 
+    for (int i = 1; i<(num_blocks-1); i++){
+        start += block_size;
+        end += block_size;
+        blocks[i] = Block(H,T,start,end, blocks[i-1].border_col, scoring_function, gap_penalty, a, b);
+    }
+    
+    int l = num_blocks-1;
+    start += last_size;
+    end += last_size;
+    blocks[l] = Block(H,T,start,end, blocks[l-1].border_col, scoring_function, gap_penalty, a, b);
+
+    
+    // --------------------- Threading (algorithm execution)  -----------------------
+
+    std::vector<std::thread> workers(num_blocks);
+
+    for (int i = 0; i<num_blocks; i++){
+        workers[i] = std::thread(&Block::do_work, blocks[i]);
+    }
+
+    // ------------------------- Joining ----------------------------
+
+    for (int i = 0; i<num_blocks; i++){
+        workers[i].join();
+    }
 
     // ----------------- print T ---------------------
 
-    // for (int i = 0; i < n; ++i){
-    //     for (int j = 0; j < m; ++j){
-    //         std::cout << T[i][j] << ' ';
-    //     }
-    //     std::cout << std::endl;
-    // }
+    for (int i = 0; i < n; ++i){
+        for (int j = 0; j < m; ++j){
+            std::cout << T[i][j] << ' ';
+        }
+        std::cout << std::endl;
+    }
 
-    //  ---------------- print H --------------------
+    // ---------------- print H --------------------
 
-    // for (int i = 0; i < n; ++i){
-    //     for (int j = 0; j < m; ++j){
-    //         std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
-    //     }
-    //     std::cout << std::endl;
-    // }          
+    for (int i = 0; i < n; ++i){
+        for (int j = 0; j < m; ++j){
+            std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
+        }
+        std::cout << std::endl;
+    }          
 
     // ----------------- Traceback --------------------
     
