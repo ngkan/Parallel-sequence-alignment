@@ -293,7 +293,7 @@ void SimplePool::stop() {
     }
 }
 
-//----------------------Diagonal Wavefront applied to Needleman-Wunsh ------------------------------
+//---------------------- Diagonal Wavefront (DW) applied to Needleman-Wunsh ------------------------------
 
 std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::function<int(char, char)> scoring_function, int gap_penalty) {
     
@@ -355,7 +355,7 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::functi
     //     std::cout << std::endl;
     // }
 
-    // // // ---------------- print H --------------------
+    //  ---------------- print H --------------------
 
     // for (int i = 0; i < n; ++i){
     //     for (int j = 0; j < m; ++j){
@@ -396,5 +396,107 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::functi
 
     return res;
 }
+
+// ---------------------------- Block class for BLock-Based Wavefront -------------------------------
+
+class Block{
+    public:
+        std::vector<std::vector<int>> H,T;
+        int start, end;
+        std::vector<bool> start_col, border_col;
+    
+    Block(std::vector<std::vector<int>>& H,std::vector<std::vector<int>>& T, int start, int end, std::vector<bool>& start_col){
+        this->H = H;
+        this->T = T;
+        this->start = start;
+        this-> end = end;
+        this->start_col = start_col;
+        int n = H.size();
+        std::vector<bool> init(n-1,false);
+        this->border_col = init;
+    }
+
+    void do_work(){
+
+        int i = 0;
+        int n = H.size();
+        
+    }
+
+};
+
+//---------------------- BLock-Based Wavefront (BW) applied to Needleman-Wunsh ------------------------------
+
+std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::function<int(char, char)> scoring_function, int gap_penalty, int num_blocks) {
+    
+    int n = a.length()+1; // row number
+    int m = b.length()+1; // col number
+
+    std::vector<std::vector<int>> H,T;
+
+    // ---------------- Initialization --------------
+
+    int block_size = (int) (m-1)/n;
+    int last_size = (m-1) % n;
+
+    // ------------------ Algorithm  ------------------
+
+    int r, c;
+
+    // iterate over antidiagonals on the row axis
+
+
+
+    // ----------------- print T ---------------------
+
+    // for (int i = 0; i < n; ++i){
+    //     for (int j = 0; j < m; ++j){
+    //         std::cout << T[i][j] << ' ';
+    //     }
+    //     std::cout << std::endl;
+    // }
+
+    //  ---------------- print H --------------------
+
+    // for (int i = 0; i < n; ++i){
+    //     for (int j = 0; j < m; ++j){
+    //         std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
+    //     }
+    //     std::cout << std::endl;
+    // }          
+
+    // ----------------- Traceback --------------------
+    
+    std::vector<std::pair<int, int>> res;
+
+    int row = n-1;
+    int col = m-1;
+
+    while (true){ // follow indication matrix for traceback
+        int gap_type = T[row][col];
+
+        if (gap_type==gap_2){
+            res.push_back(std::pair(row,0));
+            row -= 1;
+        }
+        else if (gap_type==gap_1){
+            res.push_back(std::pair(0,col));
+            col -= 1;
+        }
+        else if (gap_type==no_gap){
+            res.push_back(std::pair(row,col));
+            row -= 1;
+            col -= 1;
+        }
+        if ((row==0)&&(col==0)){
+            break;
+        }
+    }
+
+    std::reverse(res.begin(),res.end());
+
+    return res;
+}
+
 
 #endif
