@@ -16,6 +16,8 @@
 #include <thread>
 #include <queue>
 
+#include "../thread_pool.cpp"
+
 #define gap_1 1 // (i,j-1)
 #define gap_2 2 // (i-1,j)
 #define no_gap 3
@@ -145,47 +147,6 @@ std::vector<std::pair<int, int>> NW(std::string a, std::string b, std::function<
     return res;
 }
 
-// --------------------- SafeUnboundedQueue for Diagonal Wavefront --------------------------------
-
-template <class E> 
-class SafeUnboundedQueue {
-        std::queue<E> elements;
-        std::mutex lock;
-        std::condition_variable not_empty;
-    public: 
-        SafeUnboundedQueue<E>(){}
-        void push(const E& element);
-        E pop ();
-        bool is_empty() const {return this->elements.empty();}
-};
-
-template <class E>
-void SafeUnboundedQueue<E>::push(const E& element) {
-
-    std::unique_lock<std::mutex> lk(lock);
-
-    bool was_empty = is_empty();
-    elements.push(element);
-    // signal that queue is not longer empty
-    if (was_empty){ 
-        not_empty.notify_all();
-    }
-
-}
-
-template <class E> 
-E SafeUnboundedQueue<E>::pop() {
-    
-    std::unique_lock<std::mutex> lk(lock);
-
-    while(is_empty()){
-        not_empty.wait(lk);
-    }
-    // hold the lock, queue not empty
-    E last = elements.front();
-    elements.pop();
-    return last;
-}
 
 //---------------------- Thread pool for Diagonal Wavefront --------------------------------
 
@@ -420,7 +381,7 @@ class Block{
 
         int i = 0;
         int n = H.size();
-        
+
     }
 
 };
