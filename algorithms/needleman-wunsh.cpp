@@ -196,7 +196,7 @@ class SimplePool {
 
     public:
         SafeUnboundedQueue< std::pair<int,int> > tasks;
-        SimplePool(unsigned int num_workers, int n, int m );
+        SimplePool(unsigned int num_workers, std::string a, std::string b, std::function<int(char, char)> scoring_function, int gap_penalty);
         ~SimplePool();
         std::vector<std::vector<int>> H,T;
         void push(std::pair<int, int> cell);
@@ -223,20 +223,45 @@ void SimplePool::do_work() {
 
 }
 
-SimplePool::SimplePool(unsigned int num_workers, int n, int m) {
+SimplePool::SimplePool(unsigned int num_workers, std::string a, std::string b, std::function<int(char, char)> scoring_function, int gap_penalty) {
+
+    int n = a.length()+1;
+    int m = b.length()+1;
+
+    int max = std::max(n,m);
+    int min = std::min(n,m);
 
     std::vector<std::vector<int>> h(n, std::vector<int> (m));
-    std::vector<std::vector<int>> t(n, std::vector<int> (m));
+    std::vector<std::vector<int>> t(n, std::vector<int> (m,0));
     
+    for (int i = 0; i<min; i++){
+        h[i][0] = i*gap_penalty;
+        h[0][i] = i*gap_penalty;
+    }
+
+    if (max==n){  // extend row axis
+        for (int i = min; i<max; i++ ){
+            h[i][0] = i*gap_penalty;
+        }
+    }
+    else{ // extend column axis
+        for (int i = min; i<max; i++ ){
+            h[0][i] = i*gap_penalty;
+        }
+    }
+
     this->H = h;
     this->T = t;
-
+    this->scoring_function = scoring_function;
+    this->a = a;
+    this->b = b;
+    this->gap_penalty = gap_penalty;
     this->num_workers = num_workers;
 
+    // send threads to computation loop
     for (int i = 0; i<num_workers; i++){
         workers.push_back(std::thread(&SimplePool::do_work, this));
     }
-
 }
 
 SimplePool::~SimplePool() {
@@ -275,105 +300,69 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::functi
     int n = a.length()+1; // row number
     int m = b.length()+1; // col number
 
-    int max = std::max(n,m);
-    int min = std::min(n,m);
-
     // ---------------- Initialization --------------
 
-    unsigned int num_workers = min-1;
-    SimplePool worker_pool= SimplePool(num_workers, n , m);
-
-    worker_pool.scoring_function = scoring_function;
-    worker_pool.a = a;
-    worker_pool.b = b;
-    worker_pool.gap_penalty = gap_penalty;
-
-    for (int i = 0; i<min; i++){
-        worker_pool.H[i][0] = i*gap_penalty;
-        worker_pool.H[0][i] = i*gap_penalty;
-        worker_pool.T[i][0] = 0;
-        worker_pool.T[0][i] = 0;
-    }
-
-    if (max==n){  // extend row axis
-        for (int i = min; i<max; i++ ){
-            worker_pool.H[i][0] = i*gap_penalty;
-            worker_pool.T[i][0] = 0;
-        }
-    }
-    else{ // extend column axis
-        for (int i = min; i<max; i++ ){
-            worker_pool.H[0][i] = i*gap_penalty;
-            worker_pool.T[0][i] = 0;
-        }
-    }
+    unsigned int num_workers = std::min(n,m)-1; // maximal antidiagonal size for inner matrix (without first row and first column)
+    SimplePool worker_pool= SimplePool(num_workers, a, b, scoring_function, gap_penalty );
 
     // ------------------ Algorithm  ------------------
 
     int r, c;
-    // iterate over rows
+
+    // iterate over antidiagonals on the row axis
     for (int i = 1; i<n; i++){
-        // construct anti-diagonal and push tasks
         r = i;
         c = 1;
-        std::cout << "diag " << i << std::endl;
+        // construct anti-diagonal and push tasks
         while ((1<=r)&&(c<m)){
-            std::cout << "(" << r << ' ' << c << ")" << ' ';
             worker_pool.push(std::pair(r,c));
             r -= 1;
             c += 1;
         }
-
-        while(!worker_pool.tasks.is_empty()){
+        // wait until computations are finished
+        while(!worker_pool.tasks.is_empty()){ 
             ;
         }
     }
-    // then over columns
+    // iterate over antidiagonals on the column axis
     for (int j = 2; j<m; j++){
-        // construct anti-diagonal and push tasks
         r = n-1;
         c = j;
+        // construct anti-diagonal and push tasks
         while ((1<=r)&&(c<m)){
             worker_pool.push(std::pair(r,c));
             r -= 1;
             c += 1;
         }
-
+        // wait until computations are finished
         while(!worker_pool.tasks.is_empty()){
             ;
         }
     }
 
-    worker_pool.stop();
+    worker_pool.stop(); // join all threads
 
     std::vector<std::vector<int>> H,T;
     H = worker_pool.H;
     T = worker_pool.T;
 
-    std::cout<< "finished work" << std::endl;
-
-    std::cout << "T row " << worker_pool.T.size() << " col" << worker_pool.T[0].size() << std::endl;
-    // --------------- print H size -----------
-    std::cout << "H row " << worker_pool.H.size() << " col" << worker_pool.H[0].size() << std::endl;
-
-
     // ----------------- print T ---------------------
 
-    for (int i = 0; i < n; ++i){
-        for (int j = 0; j < m; ++j){
-            std::cout << T[i][j] << ' ';
-        }
-        std::cout << std::endl;
-    }
+    // for (int i = 0; i < n; ++i){
+    //     for (int j = 0; j < m; ++j){
+    //         std::cout << T[i][j] << ' ';
+    //     }
+    //     std::cout << std::endl;
+    // }
 
-    // // ---------------- print H --------------------
+    // // // ---------------- print H --------------------
 
-    for (int i = 0; i < n; ++i){
-        for (int j = 0; j < m; ++j){
-            std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
-        }
-        std::cout << std::endl;
-    }          
+    // for (int i = 0; i < n; ++i){
+    //     for (int j = 0; j < m; ++j){
+    //         std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
+    //     }
+    //     std::cout << std::endl;
+    // }          
 
     // ----------------- Traceback --------------------
     
