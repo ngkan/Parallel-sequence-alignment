@@ -37,7 +37,7 @@ std::vector<std::vector<std::string>> get_tests_from_path(std::filesystem::path 
 
     for (auto const& dir_entry : std::filesystem::directory_iterator{path}) {
         if (not std::filesystem::is_directory(dir_entry)) {
-            std::cerr << dir_entry << " is not a dictionary; skipped." << std::endl;
+            std::cerr << dir_entry.path() << " is not a dictionary; skipped." << std::endl;
             continue;
         }
 
@@ -61,7 +61,7 @@ std::vector<std::vector<std::string>> get_tests_from_path(std::filesystem::path 
         }
 
         if (count != 2 || not valid) {
-            std::cerr << dir_entry << " is not a valid test folder; skipped." << std::endl;
+            std::cerr << dir_entry.path() << " is not a valid test folder; skipped." << std::endl;
             continue;
         }
 
