@@ -37,9 +37,9 @@ void test_gotoh() {
 
 void test_nw_bw(){
 
-    std::string a = "TAGTAGTAG";
-    std::string b = "TAGTAGTAG";
-    int num_blocks = 3;
+    std::string a = "TAGCAAAA";
+    std::string b = "TAGTCAAAA";
+    int num_blocks = 4;
 
     auto res = BW_NW(a, b, [](char a,char b) { if(a==b) return 1; else return -1; }, -2, num_blocks);
     for (auto c : res)
@@ -58,14 +58,14 @@ void test_big() {
 }
 
 int main() {
-    // test_nw_bw();
+    test_nw_bw();
     //test_nw_dw();
     //test_gotoh();
 
     // std::cout << fasta::read_single("tests/atf5/Q6P788.fasta");
     // test_small();
-    auto ls = get_tests_from_path("tests/small");
-    for (auto v: ls) {
-        std::cout << "testname: " << v[0] << '\n' << v[1] << '\n' << v[2] << std::endl;
-    }
+    // auto ls = get_tests_from_path("tests/small");
+    // for (auto v: ls) {
+    //     std::cout << "testname: " << v[0] << '\n' << v[1] << '\n' << v[2] << std::endl;
+    // }
 }

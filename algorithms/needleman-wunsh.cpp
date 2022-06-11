@@ -422,12 +422,11 @@ class Block{
 
      /* executes algorithm for block */
     void do_work(){
-        std::cout << "id " << id << std::endl;
         int n = (*flag_col).size();
 
-        for (int j = 0; j < n; ++j){
-            std::cout << (*flag_col)[j] << ' ';
-        }
+        // for (int j = 0; j < n; ++j){
+        //     std::cout << (*flag_col)[j] << ' ';
+        // }
         std::cout << std::endl;
 
         for (int i = 0; i<n; i++){
@@ -436,8 +435,13 @@ class Block{
                 ;
             }
             compute_line(i+1);
+
             // mark the border element of the line as true
             (*border_col)[i]  = true;
+
+            for (int j = 0; j < n; ++j){
+                std::cout << (*border_col)[j] << ' ';
+            }
         }
 
     }
@@ -459,6 +463,9 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
     int n = a.length()+1; // row number
     int m = b.length()+1; // col number
 
+    int max = std::max(n,m);
+    int min = std::min(n,m);
+
     std::vector<int>** H = new std::vector<int>* [n];
     std::vector<int>** T = new std::vector<int>* [n];
 
@@ -467,7 +474,25 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
         T[i] = new std::vector<int>(m,0);
     }
 
-    // ---------------- Initialization --------------
+    // ------------------------- H Initialization --------------------------------
+
+    for (int i = 0; i<min; i++){
+        (*H[i])[0] = i*gap_penalty;
+        (*H[0])[i] = i*gap_penalty;
+    }
+
+    if (max==n){  // extend row axis
+        for (int i = min; i<max; i++ ){
+            (*H[i])[0] = i*gap_penalty;
+        }
+    }
+    else{ // extend column axis
+        for (int i = min; i<max; i++ ){
+            (*H[0])[i] = i*gap_penalty;
+        }
+    }
+
+    // ------------------------- Block Initialization --------------------------
     // assume block_size < m and block_size > 1
 
     int block_size = (int) (m-1)/num_blocks;
@@ -490,16 +515,20 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
     for (int i = 1; i<(num_blocks-1); i++){
         start += block_size;
         end += block_size;
-        std::cout << "( " << start << ' '<< end << " )" << std::endl;
         blocks[i] = Block(i,H,T,start,end, blocks[i-1].border_col, scoring_function, gap_penalty, a, b);
     }
     
     int l = num_blocks-1;
-    start += last_size;
+    start += block_size;
     end += last_size;
     blocks[l] = Block(l,H,T,start,end, blocks[l-1].border_col, scoring_function, gap_penalty, a, b);
     
     std::cout << "finish block construction" << std::endl;
+
+    for (int i = 0; i<(num_blocks); i++){
+
+         std::cout << "( " << blocks[i].start << ' '<< blocks[i].end << " )" << std::endl;
+    }    
     
     // --------------------- Threading (algorithm execution)  -----------------------
 
