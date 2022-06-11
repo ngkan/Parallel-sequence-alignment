@@ -5,7 +5,8 @@ SOURCES = \
 	algorithms/needleman-wunsh.cpp \
 	algorithms/rajko-aluru.cpp \
 	algorithms/gotoh.cpp \
-	algorithms.cpp\
+	algorithms.cpp \
+	thread_pool.cpp \
 	utils.cpp \
 	main.cpp 
 
@@ -13,7 +14,7 @@ OBJECTS = \
 	utils.o \
 	main.o 
 
-exec: main.cpp utils.cpp algorithms.cpp algorithms/rajko-aluru.cpp algorithms/needleman-wunsh.cpp algorithms/gotoh.cpp
+exec: main.cpp utils.cpp algorithms.cpp thread_pool.cpp algorithms/rajko-aluru.cpp algorithms/needleman-wunsh.cpp algorithms/gotoh.cpp
 	$(CXX) main.cpp  $(CFLAGS) -o exec 
 
 # exec: $(OBJECTS)

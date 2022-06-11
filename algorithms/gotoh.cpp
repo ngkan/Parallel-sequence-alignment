@@ -8,7 +8,9 @@
 #include <utility>
 #include <vector>
 
-std::pair<int, std::vector<std::pair<int, int>>> Gotoh(std::string a, std::string b, std::function<int(char, char)> scoring_function, int gap_penalty, int constant_penalty = 0) {
+#include "../thread_pool.cpp"
+
+std::vector<std::pair<int, int>> Gotoh(std::string a, std::string b, std::function<int(char, char)> scoring_function, int gap_penalty, int constant_penalty = 0) {
     // initialize
     size_t n = a.size();
     size_t m = b.size();
@@ -62,7 +64,7 @@ std::pair<int, std::vector<std::pair<int, int>>> Gotoh(std::string a, std::strin
     }
 
     std::reverse(sequence.begin(), sequence.end());
-    return std::make_pair(H[n][m], sequence);
+    return sequence;
 }
 
 #endif

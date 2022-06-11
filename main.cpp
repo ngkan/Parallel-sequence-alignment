@@ -26,8 +26,7 @@ void test_gotoh() {
     std::string b = "ATCG";
 
     auto res = Gotoh(a, b, [](char x, char y) -> int { return (int) x == y; }, -1, -2);
-    std::cout << "score " << res.first << std::endl;
-    for (auto c : res.second)
+    for (auto c : res)
         std::cout << c.first << ' ' << c.second << std::endl;
 
 }
