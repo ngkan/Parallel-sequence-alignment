@@ -403,7 +403,7 @@ class Block{
         int gap_penalty,id;
 
         Block(){};
-        Block(int block_id, std::vector<int>** H,std::vector<int>** T, int start, int end, std::vector<bool>* start_col, std::function<int(char,char)> f, int p, std::string a, std::string b){
+        Block(int block_id, std::vector<int>** H,std::vector<int>** T, int start, int end, std::vector<bool>* flag_col, std::function<int(char,char)> f, int p, std::string a, std::string b){
         this->H = H;
         this->T = T;
         this-> id = block_id;
@@ -414,7 +414,7 @@ class Block{
         this->scoring_function = f;
         this->gap_penalty = p;
 
-        this->flag_col = start_col;
+        this->flag_col = flag_col;
         int n = (**H).size();
         std::vector<bool>* init = new std::vector<bool>(n-1,false);
         this->border_col = init;
@@ -424,9 +424,6 @@ class Block{
     void do_work(){
         int n = (*flag_col).size();
 
-        // for (int j = 0; j < n; ++j){
-        //     std::cout << (*flag_col)[j] << ' ';
-        // }
         std::cout << std::endl;
 
         for (int i = 0; i<n; i++){
@@ -435,18 +432,13 @@ class Block{
                 ;
             }
             compute_line(i+1);
-
             // mark the border element of the line as true
             (*border_col)[i]  = true;
-
-            for (int j = 0; j < n; ++j){
-                std::cout << (*border_col)[j] << ' ';
-            }
         }
 
     }
 
-        /* computes and records all cells of line i from (i,start) to (i,end) for H and T */
+    /* computes and records all cells of line i from (i,start) to (i,end) for H and T */
     void compute_line(int i ){
         for (int k = start; k < end; k++){
             (*H[i])[start] = RecurrenceRelation_pointers(T,H,i,k,a[i-1], b[k-1], scoring_function, gap_penalty);
