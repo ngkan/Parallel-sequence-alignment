@@ -68,15 +68,20 @@ std::vector<std::pair<int, int>> NW(std::string a, std::string b, std::function<
     for (int i = 0; i < min; i++) {
         H[i][0] = i * gap_penalty;
         H[0][i] = i * gap_penalty;
+        T[i][0] = gap_2;
+        T[0][i] = gap_1;
+        
     }
 
     if (max == n) {  // extend row axis
         for (int i = min; i < max; i++) {
             H[i][0] = i * gap_penalty;
+            T[i][0] = gap_2;
         }
     } else {  // extend column axis
         for (int i = min; i < max; i++) {
             H[0][i] = i * gap_penalty;
+            T[0][i] = gap_1;
         }
     }
 
@@ -90,21 +95,21 @@ std::vector<std::pair<int, int>> NW(std::string a, std::string b, std::function<
 
     // // ----------------- print T ---------------------
 
-    // for (int i = 0; i < n; ++i){
-    //     for (int j = 0; j < m; ++j){
-    //         std::cout << T[i][j] << ' ';
-    //     }
-    //     std::cout << std::endl;
-    // }
+    for (int i = 0; i < n; ++i){
+        for (int j = 0; j < m; ++j){
+            std::cout << T[i][j] << ' ';
+        }
+        std::cout << std::endl;
+    }
 
     // // ---------------- print H --------------------
 
-    // for (int i = 0; i < n; ++i){
-    //     for (int j = 0; j < m; ++j){
-    //         std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
-    //     }
-    //     std::cout << std::endl;
-    // }
+    for (int i = 0; i < n; ++i){
+        for (int j = 0; j < m; ++j){
+            std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
+        }
+        std::cout << std::endl;
+    }
 
     // ----------------- Traceback --------------------
 
@@ -183,15 +188,20 @@ SimplePool::SimplePool(unsigned int num_workers, std::string a, std::string b, s
     for (int i = 0; i < min; i++) {
         h[i][0] = i * gap_penalty;
         h[0][i] = i * gap_penalty;
+        t[i][0] = gap_2;
+        t[0][i] = gap_1;
     }
 
     if (max == n) {  // extend row axis
         for (int i = min; i < max; i++) {
             h[i][0] = i * gap_penalty;
+            t[i][0] = gap_2;
+
         }
     } else {  // extend column axis
         for (int i = min; i < max; i++) {
             h[0][i] = i * gap_penalty;
+            t[0][i] = gap_1;
         }
     }
 
@@ -318,21 +328,21 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, std::functi
 
     // ----------------- print T ---------------------
 
-    // for (int i = 0; i < n; ++i){
-    //     for (int j = 0; j < m; ++j){
-    //         std::cout << T[i][j] << ' ';
-    //     }
-    //     std::cout << std::endl;
-    // }
+    for (int i = 0; i < n; ++i){
+        for (int j = 0; j < m; ++j){
+            std::cout << T[i][j] << ' ';
+        }
+        std::cout << std::endl;
+    }
 
     //  ---------------- print H --------------------
 
-    // for (int i = 0; i < n; ++i){
-    //     for (int j = 0; j < m; ++j){
-    //         std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
-    //     }
-    //     std::cout << std::endl;
-    // }
+    for (int i = 0; i < n; ++i){
+        for (int j = 0; j < m; ++j){
+            std::cout << ' ' << ' ' << H[i][j] << ' ' << ' ';
+        }
+        std::cout << std::endl;
+    }
 
     // ----------------- Traceback --------------------
 
@@ -440,15 +450,20 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
     for (int i = 0; i < min; i++) {
         (*H)[i][0] = i * gap_penalty;
         (*H)[0][i] = i * gap_penalty;
+        (*T)[i][0] = gap_2;
+        (*T)[0][i] = gap_1;
+        
     }
 
     if (max == n) {  // extend row axis
         for (int i = min; i < max; i++) {
             (*H)[i][0] = i * gap_penalty;
+            (*T)[i][0] = gap_2;
         }
     } else {  // extend column axis
         for (int i = min; i < max; i++) {
             (*H)[0][i] = i * gap_penalty;
+            (*T)[0][i] = gap_1;
         }
     }
 
@@ -481,8 +496,6 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, std::functi
     start += block_size;
     end += last_size;
     blocks[l] = Block(l, H, T, start, end, blocks[l - 1].border_col, scoring_function, gap_penalty, &a, &b);
-
-    std::cout << "finish block construction" << std::endl;
 
     for (int i = 0; i < (num_blocks); i++) {
         std::cout << "( " << blocks[i].start << ' ' << blocks[i].end << " )" << std::endl;

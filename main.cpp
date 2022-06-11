@@ -6,8 +6,10 @@
 
 
 void test_nw() {
-    std::string a = "ATC";
-    std::string b = "ATCG";
+    std::cout<< "Needleman-Wunsh" << std::endl;
+
+    std::string a = "AAATAGTC";
+    std::string b = "TAGTC";
 
     auto res = NW(a, b, [](char a,char b) { if(a==b) return 1; else return -1; }, -2);
     for (auto c : res)
@@ -15,8 +17,10 @@ void test_nw() {
 }
 
 void test_nw_dw() {
-    std::string a = "TAGAAATTT";
-    std::string b = "TAGTTT";
+    std::cout<< "Needleman-Wunsh DW" << std::endl;
+
+    std::string a = "AAATAGTC";
+    std::string b = "TAGTC";
 
     auto res = DW_NW(a, b, [](char a,char b) { if(a==b) return 1; else return -1; }, -2);
     for (auto c : res)
@@ -36,10 +40,10 @@ void test_gotoh() {
 }
 
 void test_nw_bw(){
-
-    std::string a = "TAGCAAAA";
-    std::string b = "TAGTCAAAA";
-    int num_blocks = 4;
+    std::cout<< "Needleman-Wunsh BW" << std::endl;
+    std::string a = "AAATAGTC";
+    std::string b = "TAGTC";
+    int num_blocks = 2;
 
     auto res = BW_NW(a, b, [](char a,char b) { if(a==b) return 1; else return -1; }, -2, num_blocks);
     for (auto c : res)
@@ -59,7 +63,7 @@ void test_big() {
 
 int main() {
     test_nw_bw();
-    //test_nw_dw();
+    test_nw_dw();
     //test_gotoh();
 
     // std::cout << fasta::read_single("tests/atf5/Q6P788.fasta");
