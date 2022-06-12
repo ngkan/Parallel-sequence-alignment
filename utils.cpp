@@ -73,4 +73,33 @@ std::vector<std::vector<std::string>> get_tests_from_path(std::filesystem::path 
     return result;
 }
 
+// changes alignment format from a pair vector format to a letter format
+void print_alignment_letters(std::vector<std::pair<int, int>> C, std::string a, std::string b){
+    
+    for (auto c : C){
+        char fir;
+        if (c.first==0){
+            fir = '-';
+        }
+        else{
+            fir = a[c.first-1];
+        }
+        std::cout << fir << ' ';
+    }
+    std::cout <<  std::endl;
+
+    for (auto c : C){
+        char sec;
+        if (c.second==0){
+            sec = '-';
+        }
+        else{
+            sec = b[c.second-1] ;
+        }
+        std::cout << sec << ' ';
+    }
+    std::cout << std::endl;
+}
+
+
 #endif

@@ -7,6 +7,8 @@
 #include <mutex>
 #include <queue>
 #include <thread>
+#include <unistd.h>
+
 
 template <class E>
 class SafeUnboundedQueue {
