@@ -21,9 +21,9 @@ int main(int argc, char* argv[]){
     int num_threads = std::stoi(argv[1]);
     int length_sequence = std::stoi(argv[2]);
 
-    stress_tests_gotoh(length_sequence, num_threads);
-    std::cout <<'\n'<< std::endl;
-    stress_tests_NW(length_sequence, num_threads);
+    stress_tests_gotoh(num_threads, length_sequence);
+    // std::cout <<'\n'<< std::endl;
+    // stress_tests_NW(length_sequence, num_threads);
 
     // std::pair<std::string, std::string> AB = generate_sequence_pair(length_sequence);
     
