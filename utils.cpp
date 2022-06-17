@@ -74,32 +74,69 @@ std::vector<std::vector<std::string>> get_tests_from_path(std::filesystem::path 
 }
 
 // changes alignment format from a pair vector format to a letter format
-void print_alignment_letters(std::vector<std::pair<int, int>> C, std::string a, std::string b){
-    
-    for (auto c : C){
+void print_alignment_letters(std::vector<std::pair<int, int>> C, std::string a, std::string b) {
+    for (auto c : C) {
         char fir;
-        if (c.first==0){
+        if (c.first == 0) {
             fir = '-';
-        }
-        else{
-            fir = a[c.first-1];
+        } else {
+            fir = a[c.first - 1];
         }
         std::cout << fir << ' ';
     }
-    std::cout <<  std::endl;
+    std::cout << std::endl;
 
-    for (auto c : C){
+    for (auto c : C) {
         char sec;
-        if (c.second==0){
+        if (c.second == 0) {
             sec = '-';
-        }
-        else{
-            sec = b[c.second-1] ;
+        } else {
+            sec = b[c.second - 1];
         }
         std::cout << sec << ' ';
     }
     std::cout << std::endl;
 }
 
+#define gaps 1
+#define match 2
+#define mismatch 3
+#define max_gap 3
+std::pair<std::string, std::string> generate_sequence_pair(int length_sequence) {
+    std::vector<char> nucleo = {'A', 'T', 'G', 'C'};
+    std::vector<int> type = {match, match, mismatch, gaps};
+    std::string A, B;
+
+    for (int i = 0; i < length_sequence; i++) {
+        // choose A character
+        int tA = (int)rand() % 4;
+        A += nucleo[tA];
+
+        int tB = (int)rand() % (type.size());
+        if (type[tB] == match)
+            B += nucleo[tB];
+        else if (type[tB] == mismatch)
+            B += nucleo[(tA + 1) % 4];
+        else {
+            // pick a gap size
+            int seq = (int)rand() % 2;        // chooses sequence
+            int siz = (int)rand() % max_gap;  // chooses gap size
+
+            if (seq == 1) {  // add characters to A
+                for (int j = 0; j < siz; j++)
+                    A += nucleo[(int)rand() % 4];
+            } else {  // add characters to B
+                for (int j = 0; j < siz; j++)
+                    B += nucleo[(int)rand() % 4];
+            }
+        }
+    }
+
+    return std::pair<std::string, std::string>(A, B);
+}
+#undef gaps
+#undef match
+#undef mismatch
+#undef max_gap
 
 #endif
