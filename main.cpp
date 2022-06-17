@@ -32,32 +32,31 @@
 // }
 
 // void test_gotoh() {
-//     // std::string a = "ATC";
-//     // std::string b = "ATCG";
+    // std::string a = "ATC";
+    // std::string b = "ATCG";
 //     std::string a = "TAGAAATTT";
 //     std::string b = "TAGTTT";
 
-//     auto res = Gotoh_DW(a, b, [](char x, char y) -> int { return (int) x == y; }, -1, -2);
+//     auto [score, alignment] = Gotoh_DW(a, b, [](char x, char y) -> int { return (int) x == y; }, -1, -2);
+//     std::cout << "score " << score << std::endl;
+//     print_alignment_letters(alignment, a, b);
+// }
+
+// void test_nw_bw(){
+
+//     std::string a = "TAGC";
+//     std::string b = "TAGTC";
+//     int num_blocks = 2;
+
+//     auto res = BW_NW(a, b, [](char a,char b) { if(a==b) return 1; else return -1; }, -2, num_blocks);
 //     for (auto c : res)
 //         std::cout << c.first << ' ' << c.second << std::endl;
 // }
 
-
-void test_small() {
-    const std::string path = "tests/small";
-
-    
-}
-
-void test_big() {
-    std::string path = "tests/big";
-
-}
-
 int main() {
 
-    test_nw_bw("TATC", "AAATATGC", 5);
-
+    // test_nw_bw("TATC", "AAATATGC", 5, true);
+    test_gotoh();
     // std::cout << read_single("tests/atf5/Q6P788.fasta");
     // auto ls = get_tests_from_path("tests/small");
     // for (auto v: ls) {
