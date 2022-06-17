@@ -96,6 +96,7 @@ int main(int argc, char* argv[]){
 
     test_nw_dw(AB.first, AB.second, 5, true);
 
+    test_nw_bw(AB.first, AB.second, 5, true);
 
     return 0;
 }

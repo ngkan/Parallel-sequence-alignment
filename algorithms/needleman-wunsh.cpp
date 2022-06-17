@@ -310,6 +310,8 @@ std::vector<std::pair<int, int>> NW(std::string a, std::string b,
     // print_2D_array(T);
     // print_2D_array(H);
 
+    std::cout << "final_score: " << (*H)[n-1][m-1] << std::endl;
+
     return Traceback(T);
 }
 
@@ -358,6 +360,8 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b,
     }
 
     worker_pool.stop();  // join all threads
+
+    std::cout << "final_score: " << (*worker_pool.H)[n-1][m-1] << std::endl;
 
     return Traceback(worker_pool.T);
 }
@@ -420,6 +424,8 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b,
     for (int i = 0; i < num_blocks; i++) {
         workers[i].join();
     }
+
+    std::cout << "final_score: " << (*H)[n-1][m-1] << std::endl;
 
     return Traceback(T);
 }
