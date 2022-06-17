@@ -285,7 +285,7 @@ class Block {
 
 
 //---------------------- Needleman-Wunsh (NW) ---------------------------
-std::vector<std::pair<int, int>> NW(std::string a, std::string b, 
+std::pair<int, std::vector<std::pair<int, int>>> NW(std::string a, std::string b, 
                                     std::function<int(char, char)> scoring_function,
                                     int gap_penalty) {
     int n = a.length() + 1;  // row number
@@ -310,14 +310,14 @@ std::vector<std::pair<int, int>> NW(std::string a, std::string b,
     // print_2D_array(T);
     // print_2D_array(H);
 
-    std::cout << "final_score: " << (*H)[n-1][m-1] << std::endl;
 
-    return Traceback(T);
+    int score = (*H)[n-1][m-1];
+    return std::pair<int, std::vector<std::pair<int, int>>>(score,Traceback(T));
 }
 
 
 //---------------- Diagonal Wavefront (DW) applied to NW ----------------
-std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b, 
+std::pair<int, std::vector<std::pair<int, int>>> DW_NW(std::string a, std::string b, 
                                        std::function<int(char, char)> scoring_function,
                                        int gap_penalty, int num_workers) {
     int n = a.length() + 1;  // row number
@@ -363,12 +363,14 @@ std::vector<std::pair<int, int>> DW_NW(std::string a, std::string b,
 
     std::cout << "final_score: " << (*worker_pool.H)[n-1][m-1] << std::endl;
 
-    return Traceback(worker_pool.T);
+    int score = (*worker_pool.H)[n-1][m-1];
+
+    return std::pair<int, std::vector<std::pair<int, int>>>(score, Traceback(worker_pool.T));
 }
 
 
 //-------------- Block-based Wavefront (BW) applied to NW ----------------
-std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b, 
+std::pair<int, std::vector<std::pair<int, int>>> BW_NW(std::string a, std::string b, 
                                        std::function<int(char, char)> scoring_function,
                                        int gap_penalty, int num_blocks) {
     int n = a.length() + 1;  // row number
@@ -425,9 +427,9 @@ std::vector<std::pair<int, int>> BW_NW(std::string a, std::string b,
         workers[i].join();
     }
 
-    std::cout << "final_score: " << (*H)[n-1][m-1] << std::endl;
 
-    return Traceback(T);
+    int score = (*H)[n-1][m-1];
+    return std::pair<int, std::vector<std::pair<int, int>>>(score,Traceback(T));
 }
 
 #endif

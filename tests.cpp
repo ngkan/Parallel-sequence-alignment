@@ -8,7 +8,8 @@ void test_nw(std::string a, std::string b, bool str_print = false) {
     std::cout<< "\nNeedleman-Wunsh" << std::endl;
     auto res = NW(a, b, [](char a,char b) { if(a==b) return 1; else return -1; }, -2);
     if (str_print)
-        print_alignment_letters(res, a, b);
+        print_alignment_letters(res.second, a, b);
+        std::cout << "Final score: " << res.first << std::endl;
 }
 
 void test_nw_dw(std::string a, std::string b, int num_workers, bool str_print = false) {
@@ -18,7 +19,8 @@ void test_nw_dw(std::string a, std::string b, int num_workers, bool str_print = 
                      -2, num_workers);
 
     if (str_print)
-        print_alignment_letters(res, a, b);
+        print_alignment_letters(res.second, a, b);
+        std::cout << "Final score: " << res.first << std::endl;
 }
 
 void test_nw_bw(std::string a, std::string b, int num_blocks, bool str_print = false ){
@@ -28,7 +30,8 @@ void test_nw_bw(std::string a, std::string b, int num_blocks, bool str_print = f
                      -2, num_blocks);
 
     if (str_print)
-        print_alignment_letters(res, a, b);
+        print_alignment_letters(res.second, a, b);
+        std::cout << "Final score: " << res.first << std::endl;
 }
 
 void test_gotoh() {
