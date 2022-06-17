@@ -387,39 +387,48 @@ std::pair<int, std::vector<std::pair<int, int>>> BW_NW(std::string a, std::strin
     // ---------------- Initialization --------------
     Initialization(T,H,gap_penalty);
 
-    // --------- Block size determination  ----------
-    // we assume block_size < m and block_size > 1
 
-    int block_size = (int)(m - 1) / num_blocks;
-    int last_size = block_size + ((m - 1) % num_blocks);
-    std::cout << "block :"  << block_size << std::endl;
-    
     // -------------- Block Creation ----------------
     std::vector<Block> blocks(num_blocks);
 
-    int start = 1;
-    int end = start + block_size;
-    std::vector<bool>* flag = new std::vector<bool>(n - 1, true);
+    if (num_blocks==1){
 
-    // first block
-    blocks[0] = Block(0, H, T, start, end, flag, 
-                      scoring_function, gap_penalty, &a, &b);
-
-    for (int i = 1; i < (num_blocks - 1); i++) {
-        start += block_size;
-        end += block_size;
-
-        blocks[i] = Block(i, H, T, start, end, blocks[i - 1].border_col, 
+        std::vector<bool>* flag = new std::vector<bool>(n - 1, true);
+        blocks[0] = Block(0, H, T, 1, m, flag, 
                           scoring_function, gap_penalty, &a, &b);
+        
     }
-    
-    int l = num_blocks - 1;
-    start += block_size;
-    end += last_size;
 
-    // last block
-    blocks[l] = Block(l, H, T, start, end, blocks[l - 1].border_col, 
-                      scoring_function, gap_penalty, &a, &b);
+    else{
+        // --- block size determination ----
+        int block_size = (int)(m - 1) / num_blocks;
+        int last_size = block_size + ((m - 1) % num_blocks);
+
+        int start = 1;
+        int end = start + block_size;
+        std::vector<bool>* flag = new std::vector<bool>(n - 1, true);
+
+        // --- first block ----
+        blocks[0] = Block(0, H, T, start, end, flag, 
+                          scoring_function, gap_penalty, &a, &b);
+
+        // --- next blocks ----
+        for (int i = 1; i < (num_blocks - 1); i++) {
+            start += block_size;
+            end += block_size;
+            blocks[i] = Block(i, H, T, start, end, blocks[i - 1].border_col, 
+                              scoring_function, gap_penalty, &a, &b);
+        }
+        
+        // --- last block ---
+        int l = num_blocks - 1;
+        start += block_size;
+        end += last_size;
+
+        blocks[l] = Block(l, H, T, start, end, blocks[l - 1].border_col, 
+                          scoring_function, gap_penalty, &a, &b);
+
+    }
 
     // ------------------ Algorithm  ------------------
     std::vector<std::thread> workers(num_blocks);

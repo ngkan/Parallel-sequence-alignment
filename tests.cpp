@@ -77,11 +77,11 @@ void stress_tests_gotoh() {
 
 void stress_tests_NW() {
     int nb_tests = 50;
-    int length = 50;
+    int length = 100;
 
     auto sfunc = [](char a, char b) { if(a==b) return 1; else return -1; };
     int gap_pen = -2;
-    std::vector<int> num_thr = {2, 3, 4, 5};
+    std::vector<int> num_thr = {1, 2, 3, 4, 5};
 
     while (nb_tests--) {
         int id = rand() % num_thr.size();

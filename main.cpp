@@ -8,11 +8,11 @@
 int main() {
 
     // test_nw_bw("TATC", "AAATATGC", 5, true);
-    //stress_tests_gotoh();
+    stress_tests_gotoh();
     std::cout << "gotoh ok" << std::endl;
 
     stress_tests_NW();
-    std::cout << "NW" << std::endl;
+    std::cout << "NW ok" << std::endl;
     // std::cout << read_single("tests/atf5/Q6P788.fasta");
     // auto ls = get_tests_from_path("tests/small");
     // for (auto v: ls) {
