@@ -154,6 +154,7 @@ class SimplePool {
         std::string a, b;
         std::function<int(char, char)> scoring_function;
         int gap_penalty;
+        std::atomic_int32_t counter;
 
         SimplePool(unsigned int num_workers, std::string a, std::string b, 
                    std::function<int(char, char)> scoring_function, int gap_penalty){
@@ -172,7 +173,7 @@ class SimplePool {
             this->a = a;
             this->b = b;
             this->gap_penalty = gap_penalty;
-            this->num_workers = num_workers;
+            this->num_workers = num_workers;            
 
             // send threads to computation loop
             for (int i = 0; i < num_workers; i++) {
@@ -204,6 +205,8 @@ class SimplePool {
 
                 (*H)[i][j] = RecurrenceRelation(T, H, i, j, a[i - 1], b[j - 1], 
                                                 scoring_function, gap_penalty);
+
+                counter--;
             }
 
         }
@@ -332,14 +335,16 @@ std::pair<int, std::vector<std::pair<int, int>>> DW_NW(std::string a, std::strin
     for (int i = 1; i < n; i++) {
         r = i;
         c = 1;
+        worker_pool.counter = 0;
         // construct anti-diagonal and push tasks
         while ((1 <= r) && (c < m)) {
+            worker_pool.counter++;
             worker_pool.tasks.push(std::pair(r, c));
             r -= 1;
             c += 1;
         }
         // wait until computations are finished
-        while (!worker_pool.tasks.is_empty()) {
+        while (worker_pool.counter.load()!=0) {
             ;
         }
     }
@@ -347,21 +352,21 @@ std::pair<int, std::vector<std::pair<int, int>>> DW_NW(std::string a, std::strin
     for (int j = 2; j < m; j++) {
         r = n - 1;
         c = j;
+        worker_pool.counter = 0;
         // construct anti-diagonal and push tasks
         while ((1 <= r) && (c < m)) {
+            worker_pool.counter++;
             worker_pool.tasks.push(std::pair(r, c));
             r -= 1;
             c += 1;
         }
         // wait until computations are finished
-        while (!worker_pool.tasks.is_empty()) {
+        while (worker_pool.counter.load()!=0) {
             ;
         }
     }
 
     worker_pool.stop();  // join all threads
-
-    std::cout << "final_score: " << (*worker_pool.H)[n-1][m-1] << std::endl;
 
     int score = (*worker_pool.H)[n-1][m-1];
 
@@ -387,7 +392,8 @@ std::pair<int, std::vector<std::pair<int, int>>> BW_NW(std::string a, std::strin
 
     int block_size = (int)(m - 1) / num_blocks;
     int last_size = block_size + ((m - 1) % num_blocks);
-
+    std::cout << "block :"  << block_size << std::endl;
+    
     // -------------- Block Creation ----------------
     std::vector<Block> blocks(num_blocks);
 

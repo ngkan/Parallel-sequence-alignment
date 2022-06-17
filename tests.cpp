@@ -74,3 +74,30 @@ void stress_tests_gotoh() {
         }
     }
 }
+
+void stress_tests_NW() {
+    int nb_tests = 50;
+    int length = 50;
+
+    auto sfunc = [](char a, char b) { if(a==b) return 1; else return -1; };
+    int gap_pen = -2;
+    std::vector<int> num_thr = {2, 3, 4, 5};
+
+    while (nb_tests--) {
+        int id = rand() % num_thr.size();
+        auto [a, b] = generate_sequence_pair(length);
+        auto [score, alignment] = NW(a, b, sfunc, gap_pen);
+        auto [score_dw, alignment_dw] = DW_NW(a, b,sfunc, gap_pen, num_thr[id]);
+        auto [score_bw, alignment_bw] = BW_NW(a, b,sfunc, gap_pen, num_thr[id]);
+        if (score != score_dw) {
+            print_alignment_letters(alignment, a, b);
+            print_alignment_letters(alignment_dw, a, b);
+            std::cout << "oops DW not equal to NW" << std::endl;
+        }
+        if (score != score_bw) {
+            print_alignment_letters(alignment, a, b);
+            print_alignment_letters(alignment_bw, a, b);
+            std::cout << "oops BW not equal to NW" << std::endl;
+        }
+    }
+}
