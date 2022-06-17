@@ -6,23 +6,7 @@
 #include "tests.cpp"
 
 int main() {
-
-    // test_nw_bw("TATC", "AAATATGC", 5, true);
-    stress_tests_gotoh(10, 2);
-    stress_tests_gotoh(10, 2);
-    // std::cout << "gotoh ok" << std::endl;
-
-    // stress_tests_NW();
-    // std::cout << "NW ok" << std::endl;
-    // std::cout << read_single("tests/atf5/Q6P788.fasta");
-    // auto ls = get_tests_from_path("tests/small");
-    // for (auto v: ls) {
-    //     std::cout << "testname: " << v[0] << '\n' << v[1] << '\n' << v[2] << std::endl;
-    //     test_nw_dw(v[1], v[2], 5);
-    
-    // }
-
-    return 0;
+    test_biology();
 }
 
 
