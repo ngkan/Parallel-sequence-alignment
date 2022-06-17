@@ -8,7 +8,8 @@
 int main() {
 
     // test_nw_bw("TATC", "AAATATGC", 5, true);
-    stress_tests_gotoh();
+    stress_tests_gotoh(10, 2);
+    stress_tests_gotoh(10, 2);
     // std::cout << "gotoh ok" << std::endl;
 
     // stress_tests_NW();

@@ -55,9 +55,8 @@ void test_gotoh() {
     //     std::cout << c.first << ' ' << c.second << std::endl;
 }
 
-void stress_tests_gotoh() {
+void stress_tests_gotoh(int num_threads, int length) {
     int nb_tests = 1;
-    int length = 5000;
 
     auto sfunc = [](char x, char y) -> int { return (int)x == y; };
     auto gap_pen = 0;
@@ -72,13 +71,13 @@ void stress_tests_gotoh() {
         std::cout << "run gotoh naive time (in ms): " << std::chrono::duration<double, std::milli>(end - start).count() << std::endl;
 
         auto start_dw = std::chrono::system_clock::now();
-        auto [score_dw, alignment_dw] = Gotoh_DW(a, b, sfunc, gap_pen, const_pen, 200, 10);
+        auto [score_dw, alignment_dw] = Gotoh_DW(a, b, sfunc, gap_pen, const_pen, 200, num_threads);
         auto end_dw = std::chrono::system_clock::now();
         std::cout << "run gotoh dw time (in ms): " << std::chrono::duration<double, std::milli>(end_dw - start_dw).count() << std::endl;
 
 
         auto start_bw = std::chrono::system_clock::now();
-        auto [score_bw, alignment_bw] = Gotoh_BW(a, b, sfunc, gap_pen, const_pen, 10);
+        auto [score_bw, alignment_bw] = Gotoh_BW(a, b, sfunc, gap_pen, const_pen, num_threads);
         auto end_bw = std::chrono::system_clock::now();
         std::cout << "run gotoh bw time (in ms): " << std::chrono::duration<double, std::milli>(end_bw - start_bw).count() << std::endl;
 
@@ -91,14 +90,13 @@ void stress_tests_gotoh() {
     }
 }
 
-void stress_tests_NW() {
+void stress_tests_NW(int num_threads, int length) {
     int nb_tests = 1;
-    int length = 5000;
 
     auto sfunc = [](char a, char b) { if(a==b) return 1; else return -1; };
     int gap_pen = -2;
     // std::vector<int> num_thr = {1, 2, 3, 4, 5};
-    std::vector<int> num_thr = {10};
+    std::vector<int> num_thr = {num_threads};
 
     while (nb_tests--) {
         int id = rand() % num_thr.size();
