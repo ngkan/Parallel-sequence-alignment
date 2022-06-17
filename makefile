@@ -13,8 +13,11 @@ OBJECTS = \
 	utils.o \
 	main.o 
 
-exec: main.cpp utils.cpp algorithms.cpp thread_pool.cpp algorithms/needleman-wunsh.cpp algorithms/gotoh.cpp
+exec: main.cpp utils.cpp tests.cpp algorithms.cpp thread_pool.cpp algorithms/needleman-wunsh.cpp algorithms/gotoh.cpp
 	$(CXX) main.cpp  $(CFLAGS) -o exec 
+
+exec: benchmarking.cpp utils.cpp tests.cpp thread_pool.cpp algorithms.cpp algorithms/needleman-wunsh.cpp algorithms/gotoh.cpp
+	$(CXX) benchmarking.cpp  $(CFLAGS) -o benchmark 
 
 # exec: $(OBJECTS)
 # 	$(CXX) $(CFLAGS) -o exec $(OBJECTS) 
